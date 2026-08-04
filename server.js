@@ -14,7 +14,12 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 
-// Tüm tartışmaları getir (en yeni en üstte)
+// Ana sayfa
+app.get('/', (req, res) => {
+  res.send('🎮 Oyun Konseyi API çalışıyor!');
+});
+
+// Tüm tartışmaları getir
 app.get('/api/discussions', async (req, res) => {
   try {
     const discussions = await Discussion.find()
@@ -42,12 +47,6 @@ app.post('/api/discussions', async (req, res) => {
   }
 });
 
-// Ana sayfa
-app.get('/', (req, res) => {
-  res.send('🎮 Oyun Konseyi API çalışıyor!');
-});
-
-const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Sunucu ${PORT} portunda çalışıyor`);
 });
