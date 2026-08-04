@@ -1,5 +1,5 @@
 # Hassas bilgiler
 .env
 
-# Gereksiz dosyalar
+# Bağımlılık klasörü (render otomatik yükler)
 node_modules/
