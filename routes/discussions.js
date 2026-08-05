@@ -90,6 +90,7 @@ router.post('/:id/like', async (req, res) => {
       discussion.likes.splice(index, 1);
     }
     await discussion.save();
+    // Hem diziyi hem de uzunluğu gönder
     res.json({ likes: discussion.likes, count: discussion.likes.length });
   } catch (error) {
     res.status(500).json({ message: 'Sunucu hatası' });
