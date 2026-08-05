@@ -43,6 +43,25 @@ app.get('/api/discussions/public', async (req, res) => {
   }
 });
 
+// Herkese açık tartışma ekleme
+app.post('/api/discussions/public', async (req, res) => {
+  try {
+    const { title, content, author } = req.body;
+    if (!title || !content) {
+      return res.status(400).json({ message: 'Başlık ve içerik zorunludur.' });
+    }
+    const newDiscussion = await Discussion.create({
+      title,
+      content,
+      author: author || 'Anonim',
+      game: 'Genel'
+    });
+    res.status(201).json(newDiscussion);
+  } catch (error) {
+    res.status(500).json({ message: 'Sunucu hatası' });
+  }
+});
+
 // ===== ADMIN ENDPOINTLERİ (ŞİFRE KORUMALI) =====
 
 // Tüm tartışmaları getir (admin)
