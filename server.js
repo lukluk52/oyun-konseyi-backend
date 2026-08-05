@@ -18,6 +18,11 @@ app.use(cors({
 }));
 
 app.use(express.json());
+// Diğer require'ların yanına ekle
+const authRoutes = require('./routes/auth');
+
+// app.use(express.json()); satırından hemen sonra ekle
+app.use('/api/auth', authRoutes);
 
 // ===== ŞİFRE AYARI (Admin panel için) =====
 const ACCESS_PASSWORD = 'MZEvAswX1sVsEn7K'; // admin.html ile aynı olacak
@@ -115,3 +120,120 @@ app.get('/', (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Sunucu ${PORT} portunda çalışıyor`);
 });
+
+// Auth işlemleri için API adresi
+const AUTH_API = 'https://oyun-konseyi-api.onrender.com/api/auth';
+
+// Token ve kullanıcı bilgisi
+let token = localStorage.getItem('token');
+let currentUser = JSON.parse(localStorage.getItem('currentUser'));
+
+// Sayfa yüklendiğinde oturum durumunu güncelle
+updateAuthUI();
+
+// Giriş/Kayıt butonlarına tıklama olaylarını bağla
+document.getElementById('btn-login')?.addEventListener('click', () => openModal('login'));
+document.getElementById('btn-register')?.addEventListener('click', () => openModal('register'));
+document.getElementById('btn-logout')?.addEventListener('click', logout);
+document.getElementById('close-modal')?.addEventListener('click', closeModal);
+document.getElementById('switch-to-register')?.addEventListener('click', () => openModal('register'));
+document.getElementById('switch-to-login')?.addEventListener('click', () => openModal('login'));
+
+// Form gönderimleri
+document.getElementById('submit-login')?.addEventListener('click', login);
+document.getElementById('submit-register')?.addEventListener('click', register);
+
+// Giriş fonksiyonu
+async function login() {
+  const email = document.getElementById('login-email').value;
+  const password = document.getElementById('login-password').value;
+  try {
+    const res = await fetch(`${AUTH_API}/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('currentUser', JSON.stringify(data.user));
+      token = data.token;
+      currentUser = data.user;
+      updateAuthUI();
+      closeModal();
+    } else {
+      alert(data.message);
+    }
+  } catch (err) {
+    alert('Bağlantı hatası.');
+  }
+}
+
+// Kayıt fonksiyonu
+async function register() {
+  const username = document.getElementById('reg-username').value;
+  const email = document.getElementById('reg-email').value;
+  const password = document.getElementById('reg-password').value;
+  try {
+    const res = await fetch(`${AUTH_API}/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, email, password })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('currentUser', JSON.stringify(data.user));
+      token = data.token;
+      currentUser = data.user;
+      updateAuthUI();
+      closeModal();
+    } else {
+      alert(data.message);
+    }
+  } catch (err) {
+    alert('Bağlantı hatası.');
+  }
+}
+
+// Çıkış fonksiyonu
+function logout() {
+  localStorage.removeItem('token');
+  localStorage.removeItem('currentUser');
+  token = null;
+  currentUser = null;
+  updateAuthUI();
+}
+
+// Oturum durumuna göre butonları ve kullanıcı bilgisini güncelle
+function updateAuthUI() {
+  const authButtons = document.getElementById('auth-buttons');
+  const userInfo = document.getElementById('user-info');
+  const usernameDisplay = document.getElementById('username-display');
+
+  if (token && currentUser) {
+    authButtons.classList.add('hidden');
+    userInfo.classList.remove('hidden');
+    usernameDisplay.textContent = currentUser.username;
+  } else {
+    authButtons.classList.remove('hidden');
+    userInfo.classList.add('hidden');
+  }
+}
+
+// Modal açma
+function openModal(type) {
+  document.getElementById('auth-modal').classList.remove('hidden');
+  if (type === 'login') {
+    document.getElementById('login-form').classList.remove('hidden');
+    document.getElementById('register-form').classList.add('hidden');
+  } else {
+    document.getElementById('register-form').classList.remove('hidden');
+    document.getElementById('login-form').classList.add('hidden');
+  }
+}
+
+// Modal kapatma
+function closeModal() {
+  document.getElementById('auth-modal').classList.add('hidden');
+}
