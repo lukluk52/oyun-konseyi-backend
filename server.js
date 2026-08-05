@@ -3,8 +3,6 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const Discussion = require('./models/Discussion');
-const authRoutes = require('./routes/auth');
-const adminAuth = require('./middleware/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,13 +14,22 @@ connectDB();
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type']
 }));
 
 app.use(express.json());
 
-// Auth rotaları (giriş/kayıt)
-app.use('/api/auth', authRoutes);
+// ===== ŞİFRE AYARI (Admin panel için) =====
+const ACCESS_PASSWORD = 'MZEvAswX1sVsEn7K'; // admin.html ile aynı olacak
+
+// Şifre kontrol middleware
+function checkPassword(req, res, next) {
+  const password = req.query.password || req.headers['x-admin-password'];
+  if (password !== ACCESS_PASSWORD) {
+    return res.status(401).json({ message: 'Bu işlem için yetkiniz yok.' });
+  }
+  next();
+}
 
 // ===== HERKESE AÇIK ENDPOINTLER =====
 
@@ -57,10 +64,10 @@ app.post('/api/discussions/public', async (req, res) => {
   }
 });
 
-// ===== ADMIN ENDPOINTLERİ (JWT ile korumalı) =====
+// ===== ADMIN ENDPOINTLERİ (Şifre korumalı) =====
 
 // Admin: tüm tartışmaları getir
-app.get('/api/discussions/admin', adminAuth, async (req, res) => {
+app.get('/api/discussions/admin', checkPassword, async (req, res) => {
   try {
     const discussions = await Discussion.find()
       .sort({ createdAt: -1 })
@@ -72,7 +79,7 @@ app.get('/api/discussions/admin', adminAuth, async (req, res) => {
 });
 
 // Admin: yeni tartışma ekle
-app.post('/api/discussions/admin', adminAuth, async (req, res) => {
+app.post('/api/discussions/admin', checkPassword, async (req, res) => {
   try {
     const { title, content, author, game } = req.body;
     const newDiscussion = await Discussion.create({
@@ -88,7 +95,7 @@ app.post('/api/discussions/admin', adminAuth, async (req, res) => {
 });
 
 // Admin: tartışma sil
-app.delete('/api/discussions/admin/:id', adminAuth, async (req, res) => {
+app.delete('/api/discussions/admin/:id', checkPassword, async (req, res) => {
   try {
     const discussion = await Discussion.findByIdAndDelete(req.params.id);
     if (!discussion) {
