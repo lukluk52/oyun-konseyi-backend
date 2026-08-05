@@ -5,8 +5,7 @@ const connectDB = require('./config/db');
 const Discussion = require('./models/Discussion');
 const authRoutes = require('./routes/auth');
 const adminAuth = require('./middleware/auth');
-const commentRoutes = require('./routes/comments');
-app.use('/api/comments', commentRoutes);
+const commentRoutes = require('./routes/comments'); // Yorum rotaları
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -25,6 +24,9 @@ app.use(express.json());
 
 // Auth rotaları (giriş/kayıt)
 app.use('/api/auth', authRoutes);
+
+// Yorum rotaları
+app.use('/api/comments', commentRoutes);
 
 // ===== HERKESE AÇIK ENDPOINTLER =====
 
