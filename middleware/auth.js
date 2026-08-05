@@ -1,4 +1,4 @@
-const jwt = require('jsonwebtoken');
+const User = require('../models/User'); // Eğer routes klasörü backend içindeyse, doğru yol budur.
 const JWT_SECRET = process.env.JWT_SECRET || 'gizli-anahtar-2025';
 
 module.exports = function(req, res, next) {
