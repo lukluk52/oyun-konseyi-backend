@@ -3,6 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const Discussion = require('./models/Discussion');
+const authRoutes = require('./routes/auth');
+const adminAuth = require('./middleware/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,36 +16,29 @@ connectDB();
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'DELETE'],
-  allowedHeaders: ['Content-Type']
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json());
 
-// ===== ŞİFRE AYARI (Admin panel için) =====
-const ACCESS_PASSWORD = 'MZEvAswX1sVsEn7K';
+// Auth rotaları (giriş/kayıt)
+app.use('/api/auth', authRoutes);
 
-// Şifre kontrol middleware
-function checkPassword(req, res, next) {
-  const password = req.query.password || req.headers['x-admin-password'];
-  if (password !== ACCESS_PASSWORD) {
-    return res.status(401).json({ message: 'Bu işlem için yetkiniz yok.' });
-  }
-  next();
-}
+// ===== HERKESE AÇIK ENDPOINTLER =====
 
-// ===== HERKESE AÇIK ENDPOINT (SADECE OKUMA) =====
+// Tartışmaları listele (herkese açık)
 app.get('/api/discussions/public', async (req, res) => {
   try {
     const discussions = await Discussion.find()
       .sort({ createdAt: -1 })
-      .limit(20);
+      .limit(50);
     res.json(discussions);
   } catch (error) {
     res.status(500).json({ message: 'Sunucu hatası' });
   }
 });
 
-// Herkese açık tartışma ekleme
+// Tartışma ekle (herkese açık)
 app.post('/api/discussions/public', async (req, res) => {
   try {
     const { title, content, author } = req.body;
@@ -62,10 +57,10 @@ app.post('/api/discussions/public', async (req, res) => {
   }
 });
 
-// ===== ADMIN ENDPOINTLERİ (ŞİFRE KORUMALI) =====
+// ===== ADMIN ENDPOINTLERİ (JWT ile korumalı) =====
 
-// Tüm tartışmaları getir (admin)
-app.get('/api/discussions/admin', checkPassword, async (req, res) => {
+// Admin: tüm tartışmaları getir
+app.get('/api/discussions/admin', adminAuth, async (req, res) => {
   try {
     const discussions = await Discussion.find()
       .sort({ createdAt: -1 })
@@ -76,14 +71,14 @@ app.get('/api/discussions/admin', checkPassword, async (req, res) => {
   }
 });
 
-// Yeni tartışma ekle (admin)
-app.post('/api/discussions/admin', checkPassword, async (req, res) => {
+// Admin: yeni tartışma ekle
+app.post('/api/discussions/admin', adminAuth, async (req, res) => {
   try {
     const { title, content, author, game } = req.body;
     const newDiscussion = await Discussion.create({
       title,
       content,
-      author: author || 'Anonim',
+      author: author || 'Admin',
       game: game || 'Genel'
     });
     res.status(201).json(newDiscussion);
@@ -92,8 +87,8 @@ app.post('/api/discussions/admin', checkPassword, async (req, res) => {
   }
 });
 
-// Tartışma sil (admin)
-app.delete('/api/discussions/admin/:id', checkPassword, async (req, res) => {
+// Admin: tartışma sil
+app.delete('/api/discussions/admin/:id', adminAuth, async (req, res) => {
   try {
     const discussion = await Discussion.findByIdAndDelete(req.params.id);
     if (!discussion) {
