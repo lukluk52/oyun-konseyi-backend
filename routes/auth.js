@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const router = express.Router();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'gizli-anahtar-2025';
+const JWT_SECRET = process.env.JWT_SECRET || 'j8Fk2Lp9xR4vY7qW0zA3bC6dE1gH5mN8sT2uV4wX6yZ0';
 
 // Kayıt ol
 router.post('/register', async (req, res) => {

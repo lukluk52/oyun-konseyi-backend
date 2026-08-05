@@ -1,5 +1,5 @@
-const User = require('../models/User'); // Eğer routes klasörü backend içindeyse, doğru yol budur.
-const JWT_SECRET = process.env.JWT_SECRET || 'gizli-anahtar-2025';
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = process.env.JWT_SECRET || 'j8Fk2Lp9xR4vY7qW0zA3bC6dE1gH5mN8sT2uV4wX6yZ0';
 
 module.exports = function(req, res, next) {
   const authHeader = req.headers.authorization;
