@@ -1,6 +1,6 @@
 const express = require('express');
 const Comment = require('../models/Comment');
-const Notification = require('../models/Notification');
+// const Notification = require('../models/Notification'); // geçici olarak kapalı
 const router = express.Router();
 
 router.get('/discussion/:discussionId', async (req, res) => {
@@ -22,7 +22,8 @@ router.post('/', async (req, res) => {
     }
     const comment = await Comment.create({ discussion, content, author: author || 'Anonim', authorId });
 
-    // Bildirim gönder (yorum)
+    // Bildirim kısmı geçici olarak kapalı
+    /*
     const Discussion = require('../models/Discussion');
     const disc = await Discussion.findById(discussion);
     if (disc && disc.authorId && disc.authorId.toString() !== authorId) {
@@ -34,6 +35,7 @@ router.post('/', async (req, res) => {
         link: `/discussion/${discussion}`
       });
     }
+    */
 
     res.status(201).json(comment);
   } catch (error) {
