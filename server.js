@@ -3,32 +3,37 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const Discussion = require('./models/Discussion');
+const authRoutes = require('./routes/auth');   // Giriş/kayıt rotaları
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Veritabanına bağlan
 connectDB();
 
+// CORS
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'DELETE'],
   allowedHeaders: ['Content-Type']
 }));
-
 app.use(express.json());
 
-// ----- ŞİFRE AYARI (admin panel için) -----
-const ACCESS_PASSWORD = 'MZEvAswX1sVsEn7K'; // admin.html'deki ile aynı olacak
+// Auth rotaları (giriş/kayıt)
+app.use('/api/auth', authRoutes);
+
+// ===== ŞİFRE AYARI (Admin panel) =====
+const ACCESS_PASSWORD = 'benim-gizli-sifrem-2025'; // admin.html'deki ile aynı olacak
 
 function checkPassword(req, res, next) {
   const password = req.query.password || req.headers['x-admin-password'];
   if (password !== ACCESS_PASSWORD) {
-    return res.status(401).json({ message: 'Yetkiniz yok.' });
+    return res.status(401).json({ message: 'Bu işlem için yetkiniz yok.' });
   }
   next();
 }
 
-// ----- HERKESE AÇIK -----
+// ===== HERKESE AÇIK =====
 app.get('/api/discussions/public', async (req, res) => {
   try {
     const discussions = await Discussion.find().sort({ createdAt: -1 }).limit(50);
@@ -54,7 +59,7 @@ app.post('/api/discussions/public', async (req, res) => {
   }
 });
 
-// ----- ADMIN (şifreli) -----
+// ===== ADMIN (şifre korumalı) =====
 app.get('/api/discussions/admin', checkPassword, async (req, res) => {
   try {
     const discussions = await Discussion.find().sort({ createdAt: -1 }).limit(50);
