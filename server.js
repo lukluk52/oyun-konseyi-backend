@@ -5,6 +5,8 @@ const connectDB = require('./config/db');
 const Discussion = require('./models/Discussion');
 const authRoutes = require('./routes/auth');
 const adminAuth = require('./middleware/auth');
+const commentRoutes = require('./routes/comments');
+app.use('/api/comments', commentRoutes);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
