@@ -3,15 +3,13 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const Discussion = require('./models/Discussion');
-const authRoutes = require('./routes/auth');   // Giriş/kayıt rotaları
+const authRoutes = require('./routes/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Veritabanına bağlan
 connectDB();
 
-// CORS
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'DELETE'],
@@ -19,11 +17,11 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Auth rotaları (giriş/kayıt)
+// Auth rotaları
 app.use('/api/auth', authRoutes);
 
-// ===== ŞİFRE AYARI (Admin panel) =====
-const ACCESS_PASSWORD = 'benim-gizli-sifrem-2025'; // admin.html'deki ile aynı olacak
+// Admin şifresi
+const ACCESS_PASSWORD = 'OSHYBJlKaDRwSMeS';
 
 function checkPassword(req, res, next) {
   const password = req.query.password || req.headers['x-admin-password'];
@@ -33,7 +31,7 @@ function checkPassword(req, res, next) {
   next();
 }
 
-// ===== HERKESE AÇIK =====
+// Herkese açık
 app.get('/api/discussions/public', async (req, res) => {
   try {
     const discussions = await Discussion.find().sort({ createdAt: -1 }).limit(50);
@@ -59,7 +57,7 @@ app.post('/api/discussions/public', async (req, res) => {
   }
 });
 
-// ===== ADMIN (şifre korumalı) =====
+// Admin (şifreli)
 app.get('/api/discussions/admin', checkPassword, async (req, res) => {
   try {
     const discussions = await Discussion.find().sort({ createdAt: -1 }).limit(50);
