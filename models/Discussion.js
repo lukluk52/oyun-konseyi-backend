@@ -4,9 +4,9 @@ const discussionSchema = new mongoose.Schema({
   title: { type: String, required: true, trim: true, maxlength: 100 },
   content: { type: String, required: true, maxlength: 2000 },
   author: { type: String, default: 'Anonim' },
-  authorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // yeni
+  authorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   game: { type: String, default: 'Genel' },
-  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // artık dizi
+  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date }
 });

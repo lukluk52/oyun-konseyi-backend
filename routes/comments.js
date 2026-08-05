@@ -1,8 +1,8 @@
 const express = require('express');
 const Comment = require('../models/Comment');
+const Notification = require('../models/Notification');
 const router = express.Router();
 
-// Yorumları getir
 router.get('/discussion/:discussionId', async (req, res) => {
   try {
     const comments = await Comment.find({ discussion: req.params.discussionId })
@@ -14,7 +14,6 @@ router.get('/discussion/:discussionId', async (req, res) => {
   }
 });
 
-// Yorum ekle
 router.post('/', async (req, res) => {
   try {
     const { discussion, content, author, authorId } = req.body;
@@ -22,13 +21,26 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ message: 'Tartışma ve içerik zorunludur.' });
     }
     const comment = await Comment.create({ discussion, content, author: author || 'Anonim', authorId });
+
+    // Bildirim gönder (yorum)
+    const Discussion = require('../models/Discussion');
+    const disc = await Discussion.findById(discussion);
+    if (disc && disc.authorId && disc.authorId.toString() !== authorId) {
+      await Notification.create({
+        recipient: disc.authorId,
+        sender: author || 'Anonim',
+        type: 'comment',
+        message: `${author || 'Birisi'} yorum yaptı.`,
+        link: `/discussion/${discussion}`
+      });
+    }
+
     res.status(201).json(comment);
   } catch (error) {
     res.status(500).json({ message: 'Sunucu hatası' });
   }
 });
 
-// Yorumu düzenle
 router.put('/:id', async (req, res) => {
   try {
     const { content } = req.body;
@@ -40,7 +52,6 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Yorumu sil
 router.delete('/:id', async (req, res) => {
   try {
     await Comment.findByIdAndDelete(req.params.id);
@@ -50,7 +61,6 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// Yorum beğeni
 router.post('/:id/like', async (req, res) => {
   try {
     const comment = await Comment.findById(req.params.id);

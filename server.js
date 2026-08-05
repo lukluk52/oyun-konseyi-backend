@@ -6,6 +6,7 @@ const authRoutes = require('./routes/auth');
 const commentRoutes = require('./routes/comments');
 const discussionRoutes = require('./routes/discussions');
 const userRoutes = require('./routes/users');
+const notificationRoutes = require('./routes/notifications');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -23,6 +24,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/discussions', discussionRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 app.get('/', (req, res) => res.send('🎮 Oyun Konseyi API çalışıyor!'));
 

@@ -4,7 +4,6 @@ const Discussion = require('../models/Discussion');
 const Comment = require('../models/Comment');
 const router = express.Router();
 
-// Kullanıcı profili (genel bilgiler)
 router.get('/:id', async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('-password');
@@ -15,7 +14,6 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Kullanıcının tartışmaları
 router.get('/:id/discussions', async (req, res) => {
   try {
     const discussions = await Discussion.find({ authorId: req.params.id }).sort({ createdAt: -1 });
@@ -25,7 +23,6 @@ router.get('/:id/discussions', async (req, res) => {
   }
 });
 
-// Kullanıcının yorumları
 router.get('/:id/comments', async (req, res) => {
   try {
     const comments = await Comment.find({ authorId: req.params.id })
