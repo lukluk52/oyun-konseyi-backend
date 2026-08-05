@@ -2,7 +2,7 @@ const express = require('express');
 const Comment = require('../models/Comment');
 const router = express.Router();
 
-// Belirli bir tartışmaya ait yorumları getir (herkese açık)
+// Yorumları getir
 router.get('/discussion/:discussionId', async (req, res) => {
   try {
     const comments = await Comment.find({ discussion: req.params.discussionId })
@@ -14,18 +14,14 @@ router.get('/discussion/:discussionId', async (req, res) => {
   }
 });
 
-// Yeni yorum ekle (giriş yapmış kullanıcılar için)
+// Yorum ekle
 router.post('/', async (req, res) => {
   try {
     const { discussion, content, author } = req.body;
     if (!discussion || !content) {
       return res.status(400).json({ message: 'Tartışma ve içerik zorunludur.' });
     }
-    const comment = await Comment.create({
-      discussion,
-      content,
-      author: author || 'Anonim'
-    });
+    const comment = await Comment.create({ discussion, content, author: author || 'Anonim' });
     res.status(201).json(comment);
   } catch (error) {
     res.status(500).json({ message: 'Sunucu hatası' });
