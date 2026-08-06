@@ -1,13 +1,12 @@
 const express = require('express');
 const Comment = require('../models/Comment');
-// const Notification = require('../models/Notification'); // geçici olarak kapalı
+const Discussion = require('../models/Discussion');
+const Notification = require('../models/Notification');
 const router = express.Router();
 
 router.get('/discussion/:discussionId', async (req, res) => {
   try {
-    const comments = await Comment.find({ discussion: req.params.discussionId })
-      .sort({ createdAt: -1 })
-      .limit(50);
+    const comments = await Comment.find({ discussion: req.params.discussionId }).sort({ createdAt: -1 }).limit(50);
     res.json(comments);
   } catch (error) {
     res.status(500).json({ message: 'Sunucu hatası' });
@@ -17,14 +16,9 @@ router.get('/discussion/:discussionId', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const { discussion, content, author, authorId } = req.body;
-    if (!discussion || !content) {
-      return res.status(400).json({ message: 'Tartışma ve içerik zorunludur.' });
-    }
+    if (!discussion || !content) return res.status(400).json({ message: 'Tartışma ve içerik zorunludur.' });
     const comment = await Comment.create({ discussion, content, author: author || 'Anonim', authorId });
-
-    // Bildirim kısmı geçici olarak kapalı
-    /*
-    const Discussion = require('../models/Discussion');
+    // Bildirim
     const disc = await Discussion.findById(discussion);
     if (disc && disc.authorId && disc.authorId.toString() !== authorId) {
       await Notification.create({
@@ -35,8 +29,6 @@ router.post('/', async (req, res) => {
         link: `/discussion/${discussion}`
       });
     }
-    */
-
     res.status(201).json(comment);
   } catch (error) {
     res.status(500).json({ message: 'Sunucu hatası' });
@@ -70,11 +62,8 @@ router.post('/:id/like', async (req, res) => {
     const userId = req.body.userId;
     if (!userId) return res.status(400).json({ message: 'userId gerekli' });
     const index = comment.likes.indexOf(userId);
-    if (index === -1) {
-      comment.likes.push(userId);
-    } else {
-      comment.likes.splice(index, 1);
-    }
+    if (index === -1) comment.likes.push(userId);
+    else comment.likes.splice(index, 1);
     await comment.save();
     res.json({ likes: comment.likes, count: comment.likes.length });
   } catch (error) {
